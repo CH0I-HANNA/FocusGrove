@@ -1,12 +1,16 @@
 package com.focusglove.api.task.service;
 
+import com.focusglove.api.task.dto.response.TaskResponse;
 import com.focusglove.api.task.entity.Task;
 import com.focusglove.api.task.repository.TaskRepository;
 import com.focusglove.api.user.entity.User;
 import com.focusglove.api.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,5 +32,13 @@ public class TaskService {
 
         // 3. DB 저장 및 ID 반환
         return taskRepository.save(task).getId();
+    }
+
+    //유저 ID로 검색해서 나온 엔티티들을 DTO로 변환해서 반환합니다.
+    @Transactional(readOnly = true) // 조회 전용 모드 (성능 최적화)
+    public List<TaskResponse> getTasksByUserId(Long userId) {
+        return taskRepository.findAllByUserId(userId).stream()
+                .map(task -> new TaskResponse(task.getId(), task.getTitle(), task.isCompleted()))
+                .collect(Collectors.toList());
     }
 }

@@ -1,10 +1,13 @@
 package com.focusglove.api.task.controller;
 
 import com.focusglove.api.task.dto.request.TaskCreateRequest;
+import com.focusglove.api.task.dto.response.TaskResponse;
 import com.focusglove.api.task.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -29,5 +32,12 @@ public class TaskController {
     ) {
         taskService.createTask(userId, request.getTitle());
         return ResponseEntity.ok("할 일이 등록되었습니다!");
+    }
+
+    //이제 URL을 통해 요청을 받을 수 있게 연결합니다.
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<TaskResponse>> getList(@PathVariable("userId") Long userId) {
+        List<TaskResponse> responses = taskService.getTasksByUserId(userId);
+        return ResponseEntity.ok(responses);
     }
 }
