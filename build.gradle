@@ -47,6 +47,9 @@ dependencies {
 	// 5. Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+	// 6. .env
+	implementation 'io.github.cdimascio:dotenv-java:3.0.0'
 }
 //로 수정
 tasks.named('test') {
