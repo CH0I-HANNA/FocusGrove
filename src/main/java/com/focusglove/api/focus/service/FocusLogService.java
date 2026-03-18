@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -33,5 +34,18 @@ public class FocusLogService {
                 .build();
 
         focusLogRepository.save(focusLog);
+    }
+
+    //오늘의 시작(00:00:00)과 끝(23:59:59) 시간을 계산해서 Repository에 넘겨줍니다.
+    @Transactional(readOnly = true)
+    public Integer getTotalFocusTimeToday(Long userId) {
+        // 1. 오늘의 시작과 끝 시간 계산
+        LocalDateTime startOfToday = LocalDate.now().atStartOfDay(); // 2026-03-19 00:00:00
+        LocalDateTime endOfToday = LocalDateTime.now(); // 현재 시간까지
+
+        // 2. DB에서 합계 가져오기 (기록이 없으면 null이 올 수 있으므로 처리 필요)
+        Integer totalTime = focusLogRepository.sumFocusTimeByUserIdAndDate(userId, startOfToday, endOfToday);
+
+        return (totalTime != null) ? totalTime : 0;
     }
 }
