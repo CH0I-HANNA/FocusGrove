@@ -21,7 +21,7 @@ public class FocusLogService {
 
     @Transactional
     public void recordFocus(FocusLogRequest request) {
-        // 1. 해당 Task가 존재하는지 확인
+        // 1. 해당 Task 조회
         Task task = taskRepository.findById(request.getTaskId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 할 일을 찾을 수 없습니다. ID: " + request.getTaskId()));
 
@@ -29,11 +29,16 @@ public class FocusLogService {
         FocusLog focusLog = FocusLog.builder()
                 .task(task)
                 .focusTime(request.getFocusTime())
-                .startTime(LocalDateTime.now().minusMinutes(request.getFocusTime())) // 현재 시간에서 집중 시간을 뺀 시점
-                .endTime(LocalDateTime.now()) // 지금 끝났다고 가정
+                .startTime(LocalDateTime.now().minusMinutes(request.getFocusTime()))
+                .endTime(LocalDateTime.now())
                 .build();
 
         focusLogRepository.save(focusLog);
+
+        //기록을 저장할 때 해당 Task를 찾아서 카운트를 올려주는 코드를 한 줄 추가합니다.
+        //JPA의 Dirty Checking(변경 감지) 덕분에 별도의 save 호출 없이도 트랜잭션이 끝날 때 DB에 반영됩니다.
+        // 3. ★ 핵심: Task의 뽀모도로 카운트 증가
+        task.incrementPomodoro();
     }
 
     //오늘의 시작(00:00:00)과 끝(23:59:59) 시간을 계산해서 Repository에 넘겨줍니다.
@@ -48,4 +53,6 @@ public class FocusLogService {
 
         return (totalTime != null) ? totalTime : 0;
     }
+
+
 }

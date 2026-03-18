@@ -40,4 +40,12 @@ public class Task extends BaseEntity {
     public void toggleStatus() {
         this.isCompleted = !this.isCompleted;
     }
+
+    //카운트를 올리는 메서드를 추가
+    public void incrementPomodoro() {
+        if (this.pomodoroCount == null) {
+            this.pomodoroCount = 0;
+        }
+        this.pomodoroCount++;
+    }
 }
