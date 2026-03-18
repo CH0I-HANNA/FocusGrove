@@ -41,10 +41,18 @@ public class TaskController {
         return ResponseEntity.ok(responses);
     }
 
-    //task-update api를 위한 수정 로직
+    //할 일 상태 변경 api를 위한 수정 로직
     @PatchMapping("/{taskId}/status")
     public ResponseEntity<String> toggleStatus(@PathVariable("taskId") Long taskId) {
         taskService.toggleTaskStatus(taskId);
         return ResponseEntity.ok("상태 변경 완료!");
     }
+
+    //할 일 삭제 api를 위한 수정 로직
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<String> delete(@PathVariable("taskId") Long taskId) {
+        taskService.deleteTask(taskId);
+        return ResponseEntity.ok("할 일이 삭제되었습니다.");
+    }
+
 }

@@ -42,7 +42,7 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    //task-update api를 위한 수정 로직
+    //할 일 상태 변경 api를 위한 수정 로직
     @Transactional
     public void toggleTaskStatus(Long taskId) {
         // 1. 수정할 Task가 있는지 확인
@@ -51,5 +51,15 @@ public class TaskService {
 
         // 2. 상태 반전 (Dirty Checking에 의해 자동으로 DB 반영됨)
         task.toggleStatus();
+    }
+
+    //할 일 삭제 api를 위한 수정 로직
+    @Transactional
+    public void deleteTask(Long taskId) {
+        // 삭제할 데이터가 있는지 먼저 확인하는 것이 안전합니다.
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("삭제할 할 일이 존재하지 않습니다. ID: " + taskId));
+
+        taskRepository.delete(task);
     }
 }
