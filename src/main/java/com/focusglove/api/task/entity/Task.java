@@ -33,4 +33,11 @@ public class Task extends BaseEntity {
     public Task(User user, String title) {
         this.user = user;
         this.title = title;
-    }}
+    }
+
+    //com.focusglove.api.task.entity.Task 클래스에 상태를 반전시키는 메서드를 추가합니다.
+    //(엔티티 스스로 자기 상태를 바꾸게 하는 것이 좋은 설계입니다.)
+    public void toggleStatus() {
+        this.isCompleted = !this.isCompleted;
+    }
+}

@@ -40,4 +40,11 @@ public class TaskController {
         List<TaskResponse> responses = taskService.getTasksByUserId(userId);
         return ResponseEntity.ok(responses);
     }
+
+    //task-update api를 위한 수정 로직
+    @PatchMapping("/{taskId}/status")
+    public ResponseEntity<String> toggleStatus(@PathVariable("taskId") Long taskId) {
+        taskService.toggleTaskStatus(taskId);
+        return ResponseEntity.ok("상태 변경 완료!");
+    }
 }
