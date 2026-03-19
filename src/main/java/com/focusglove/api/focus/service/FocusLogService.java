@@ -54,5 +54,18 @@ public class FocusLogService {
         return (totalTime != null) ? totalTime : 0;
     }
 
+    //집중 기록(focusLog) 기록 삭제를 위한 코드
+    //기록을 찾아낸 뒤, 연결된 Task의 카운트를 깎고 삭제를 진행합니다.
+    @Transactional
+    public void deleteFocusLog(Long focusLogId) {
+        // 1. 삭제할 기록 찾기
+        FocusLog log = focusLogRepository.findById(focusLogId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 기록을 찾을 수 없습니다. ID: " + focusLogId));
 
+        // 2. 연결된 Task의 카운트 감소 (Dirty Checking으로 자동 반영)
+        log.getTask().decrementPomodoro();
+
+        // 3. 기록 삭제
+        focusLogRepository.delete(log);
+    }
 }

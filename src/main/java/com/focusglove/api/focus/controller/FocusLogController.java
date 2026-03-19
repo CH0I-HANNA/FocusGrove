@@ -25,4 +25,12 @@ public class FocusLogController {
         Integer totalTime = focusLogService.getTotalFocusTimeToday(userId);
         return ResponseEntity.ok(totalTime);
     }
+
+    //집중 기록(focusLog) 기록 삭제를 위한 코드
+    //삭제는 보통 성공 시 응답 바디 없이 24 No Content를 보냅니다.
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+        focusLogService.deleteFocusLog(id);
+        return ResponseEntity.noContent().build();
+    }
 }

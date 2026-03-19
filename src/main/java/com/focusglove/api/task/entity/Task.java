@@ -48,4 +48,12 @@ public class Task extends BaseEntity {
         }
         this.pomodoroCount++;
     }
+
+    //집중 기록(focusLog) 기록 삭제를 위한 코드
+    //숫자가 0 미만으로 떨어지지 않게 방어 로직을 넣는 게 포인트입니다.
+    public void decrementPomodoro() {
+        if (this.pomodoroCount != null && this.pomodoroCount > 0) {
+            this.pomodoroCount--;
+        }
+    }
 }
