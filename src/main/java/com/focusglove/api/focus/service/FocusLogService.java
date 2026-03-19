@@ -1,6 +1,7 @@
 package com.focusglove.api.focus.service;
 
 import com.focusglove.api.focus.dto.request.FocusLogRequest;
+import com.focusglove.api.focus.dto.response.FocusLogResponse;
 import com.focusglove.api.focus.entity.FocusLog;
 import com.focusglove.api.focus.repository.FocusLogRepository;
 import com.focusglove.api.task.entity.Task;
@@ -11,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -54,28 +58,38 @@ public class FocusLogService {
         return (totalTime != null) ? totalTime : 0;
     }
 
-    //집중 기록(focusLog) 기록 삭제를 위한 코드
-    //기록을 찾아낸 뒤, 연결된 Task의 카운트를 깎고 삭제를 진행합니다.
-    @Transactional
-    public void deleteFocusLog(Long focusLogId) {
-        // 1. 삭제할 기록 찾기
-        FocusLog log = focusLogRepository.findById(focusLogId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 기록을 찾을 수 없습니다. ID: " + focusLogId));
 
-        // 2. 연결된 Task의 카운트 감소 (Dirty Checking으로 자동 반영)
-        log.getTask().decrementPomodoro();
+    // 1. 특정 날짜의 상세 기록 리스트 조회
+    @Transactional(readOnly = true)
+    public List<FocusLogResponse> getFocusHistory(Long userId, LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
 
-        // 3. 기록 삭제
-        focusLogRepository.delete(log);
+        return focusLogRepository.findAllByTaskUserIdAndStartTimeBetweenOrderByStartTimeDesc(userId, start, end)
+                .stream()
+                .map(FocusLogResponse::from)
+                .collect(Collectors.toList());
     }
 
-    // 특정 날짜의 총합을 구하는 범용 메서드
+    // 2. 특정 날짜의 총 집중 시간 합계 (기존 로직 확장)
     @Transactional(readOnly = true)
-    public Integer getTotalFocusTime(Long userId, java.time.LocalDate date) {
-        java.time.LocalDateTime start = date.atStartOfDay();
-        java.time.LocalDateTime end = date.atTime(java.time.LocalTime.MAX);
+    public Integer getTotalFocusTime(Long userId, LocalDate date) {
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.atTime(LocalTime.MAX);
 
         Integer totalTime = focusLogRepository.sumFocusTimeByUserIdAndDate(userId, start, end);
         return (totalTime != null) ? totalTime : 0;
+    }
+
+    // 3. 기록 삭제 및 Task 카운트 차감
+    @Transactional
+    public void deleteFocusLog(Long focusLogId) {
+        FocusLog log = focusLogRepository.findById(focusLogId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 기록을 찾을 수 없습니다. ID: " + focusLogId));
+
+        // Task 엔티티의 decrementPomodoro() 호출 (Dirty Checking)
+        log.getTask().decrementPomodoro();
+
+        focusLogRepository.delete(log);
     }
 }
