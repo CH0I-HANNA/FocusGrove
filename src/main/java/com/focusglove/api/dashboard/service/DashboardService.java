@@ -1,7 +1,9 @@
 package com.focusglove.api.dashboard.service;
 
 import com.focusglove.api.dashboard.dto.response.DashboardSummaryResponse;
+import com.focusglove.api.dashboard.dto.response.WeeklyChartResponse;
 import com.focusglove.api.focus.repository.FocusLogRepository;
+import com.focusglove.api.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,12 +11,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
 
     private final FocusLogRepository focusLogRepository;
+    private final TaskRepository taskRepository;
 
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getSummary(Long userId) {
@@ -62,4 +67,34 @@ public class DashboardService {
         }
         return streak;
     }
+
+    @Transactional(readOnly = true)
+    public List<WeeklyChartResponse> getWeeklyChart(Long userId) {
+        List<WeeklyChartResponse> chartData = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        // 최근 7일간 반복 (6일 전부터 오늘까지)
+        for (int i = 6; i >= 0; i--) {
+            LocalDate targetDate = today.minusDays(i);
+            LocalDateTime start = targetDate.atStartOfDay();
+            LocalDateTime end = targetDate.atTime(LocalTime.MAX);
+
+            // 1. 해당 날짜의 전체 Task 개수
+            long totalTasks = taskRepository.countByUserIdAndCreatedAtBetween(userId, start, end);
+
+            // 2. 해당 날짜에 완료된 Task 개수
+            long completedTasks = taskRepository.countByUserIdAndIsCompletedTrueAndCreatedAtBetween(userId, start, end);
+
+            // 3. 완료율 계산 (0으로 나누기 방지)
+            double rate = (totalTasks == 0) ? 0 : ((double) completedTasks / totalTasks) * 100;
+
+            // 소수점 첫째 자리까지만 반올림
+            rate = Math.round(rate * 10) / 10.0;
+
+            chartData.add(new WeeklyChartResponse(targetDate.toString().substring(5), rate)); // "MM-dd" 형태
+        }
+
+        return chartData;
+    }
+
 }
