@@ -33,4 +33,14 @@ public class FocusLogController {
         focusLogService.deleteFocusLog(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/stats/{userId}")
+    public ResponseEntity<Integer> getStats(
+            @PathVariable("userId") Long userId,
+            @RequestParam("date") @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate date) {
+
+        // 이전에 서비스에 만들어둔 특정 날짜 조회 로직을 호출합니다.
+        Integer totalTime = focusLogService.getTotalFocusTime(userId, date);
+        return ResponseEntity.ok(totalTime);
+    }
 }

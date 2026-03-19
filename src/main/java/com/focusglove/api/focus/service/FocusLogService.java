@@ -68,4 +68,14 @@ public class FocusLogService {
         // 3. 기록 삭제
         focusLogRepository.delete(log);
     }
+
+    // 특정 날짜의 총합을 구하는 범용 메서드
+    @Transactional(readOnly = true)
+    public Integer getTotalFocusTime(Long userId, java.time.LocalDate date) {
+        java.time.LocalDateTime start = date.atStartOfDay();
+        java.time.LocalDateTime end = date.atTime(java.time.LocalTime.MAX);
+
+        Integer totalTime = focusLogRepository.sumFocusTimeByUserIdAndDate(userId, start, end);
+        return (totalTime != null) ? totalTime : 0;
+    }
 }
