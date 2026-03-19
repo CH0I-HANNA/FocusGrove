@@ -31,5 +31,11 @@ public interface FocusLogRepository extends JpaRepository<FocusLog, Long> {
             @Param("end") LocalDateTime end
     );
 
+    @Query("SELECT SUM(f.focusTime) FROM FocusLog f WHERE f.task.user.id = :userId")
+    Integer sumAllFocusTimeByUserId(@Param("userId") Long userId);
 
+    // 오늘 날짜 이후의 기록 개수 세기
+    long countByTaskUserIdAndStartTimeAfter(Long userId, LocalDateTime start);
+
+    boolean existsByTaskUserIdAndStartTimeBetween(Long userId, LocalDateTime start, LocalDateTime end);
 }
